@@ -1,0 +1,1198 @@
+//------------- Array Addition -----------------//
+public class ArrayAddition
+{
+    public String array1 {get; set;}
+    public String array2 {get; set;}
+    public String resultString {get; set;}
+    
+    public List<Integer> getArray1()
+    {
+        return parseArray(array1);
+    }
+    
+    public List<Integer> getArray2()
+    {
+        return parseArray(array2);
+    }
+    
+    public List<Integer> parseArray(String input)
+    {
+        List<Integer> result=new List<Integer>();
+        if(input!=null && !String.isBlank(input))
+        {
+            String[] stringArray=input.split(',');
+            for(String s:stringArray)
+            {
+                result.add(Integer.valueOf(s.trim()));
+            }
+        }
+        return result;
+    }
+    
+    public void addArrays()
+    {
+        List<Integer> arr1=getArray1();
+        List<Integer> arr2=getArray2();
+        
+        if(arr1.size()!=arr2.size())
+        {
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error,'Array sizes must be same'));
+            return;
+        }
+        
+        List<Integer> result=new List<Integer>();
+        for(Integer i=0;i<arr1.size();i++)
+        {
+            result.add(arr1[i]+arr2[i]);
+            resultString+=result[i]+(i==arr1.size()-1?'':',');
+        }
+        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.INFO,resultString));
+    }   
+}
+
+--------------UI---------------
+<apex:page controller="ArrayAddition">
+    <h1>Array Addition</h1>
+
+    <!-- Form to enter two arrays -->
+    <apex:form >
+           
+        <h3>Enter the First Array (comma separated values):</h3>
+        <apex:inputText value="{!array1}" label="Array 1" />
+        
+        <h3>Enter the Second Array (comma separated values):</h3>
+        <apex:inputText value="{!array2}" label="Array 2" />
+        
+        <apex:commandButton value="Add Arrays" action="{!addArrays}" rerender="result" />
+    </apex:form>
+
+    <!-- Display result -->
+    <apex:outputPanel id="result">
+        <apex:pageMessages />
+    </apex:outputPanel>
+</apex:page>
+
+//-------------- Geometry Area Calculator ----------------------//
+public class GeometryAreaCalculator
+{
+    public Decimal radius {get; set;}
+    public Decimal length {get; set;}
+    public Decimal breadth {get; set;}
+    public Decimal base {get; set;}
+    public Decimal height {get; set;}
+    public Decimal area {get; set;}
+    public String shapeType {get; set;}
+    
+    public void calculateArea()
+    {
+        if(shapeType=='Circle')
+        {
+            area=Math.PI*radius*radius;
+        }
+        else if(shapeType=='Rectangle')
+        {
+            area=length*breadth;
+        }
+        else if(shapeType=='Triangle')
+        {
+            area=0.5*base*height;
+        }
+        else
+        {
+            area=0;
+        }
+    }
+    
+    public List<SelectOption> getShapeOptions()
+    {
+        return new List<SelectOption>{
+            new SelectOption('Circle','Circle'),
+            new SelectOption('Rectangle','Rectangle'),
+            new SelectOption('Triangle','Triangle')
+        };
+    }
+}
+
+------------UI-----------
+<apex:page controller="GeometryAreaCalculator">
+    <apex:form >
+        <apex:pageBlock title="Geometry Area Calculator">
+            
+            <apex:pageBlockSection columns="2">
+                <apex:outputLabel value="Select Shape" />
+                <apex:selectList value="{!shapeType}" size="1">
+                    <apex:selectOptions value="{!shapeOptions}" />
+                </apex:selectList>
+
+                <apex:outputLabel value="Radius (for Circle)" />
+                <apex:inputText value="{!radius}" />
+
+                <apex:outputLabel value="Length (for Rectangle)" />
+                <apex:inputText value="{!length}" />
+
+                <apex:outputLabel value="Breadth (for Rectangle)" />
+                <apex:inputText value="{!breadth}" />
+
+                <apex:outputLabel value="Base (for Triangle)" />
+                <apex:inputText value="{!base}" />
+
+                <apex:outputLabel value="Height (for Triangle)" />
+                <apex:inputText value="{!height}" />
+            </apex:pageBlockSection>
+
+            <apex:commandButton value="Calculate Area" action="{!calculateArea}" reRender="resultPanel" />
+            
+            <apex:outputPanel id="resultPanel">
+                <apex:outputText value="Area: {!area}" rendered="{!NOT(ISNULL(area))}" />
+            </apex:outputPanel>
+
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
+
+//------------------Currency Converter -------------------------//
+public class CurrencyConverter
+{
+    public Decimal amount {get; set;}
+    public String fromCurrency {get; set;}
+    public String toCurrency {get; set;}
+    public Decimal convertedAmount {get; set;}
+    public Boolean showResult {get; set;}
+    
+    public Map<String,Decimal> conversionRates=new Map<String,Decimal>{
+        'USD'=>1.0,
+        'INR'=>0.012,
+        'Pound'=>1.33,
+        'Euro'=>1.13,
+        'Yen'=>0.0069
+    };
+    
+    public List<SelectOption> getCurrencyOptions()
+    {
+        List<SelectOption> options =new List<SelectOption>();
+        for(String key:conversionRates.keySet())
+        {
+            options.add(new SelectOption(key,key));
+        }
+        return options;
+    }
+    
+    public void convertCurrency()
+    {
+        showResult=false;
+        if(conversionRates.containsKey(fromCurrency) && conversionRates.containsKey(toCurrency))
+        {
+            Decimal amountInUSD=amount*conversionRates.get(fromCurrency);
+            convertedAmount=amountInUSD / conversionRates.get(toCurrency);
+            showResult=true;
+        }
+  }
+}
+
+------------------UI----------------
+<apex:page controller="CurrencyConverter">
+    
+    <apex:form >
+        <apex:pageBlock title="Currency Converter">
+            <!-- Input Section -->
+            <apex:pageBlockSection columns="2">
+                
+                <apex:outputLabel value="From Currency: " />
+                <apex:selectList value="{!fromCurrency}">
+                    <apex:selectOptions value="{!currencyOptions}"/>
+                </apex:selectList>
+                
+                <apex:outputLabel value="To Currency: " />
+                <apex:selectList value="{!toCurrency}">
+                    <apex:selectOptions value="{!currencyOptions}" />
+                </apex:selectList>
+                
+                <apex:outputLabel value="Amount: " />
+                <apex:inputText value="{!amount}" />
+                
+                <apex:outputLabel value="" />
+                <apex:commandButton value="Convert!" action="{!convertCurrency}" reRender="resultBlock" />
+                
+            </apex:pageBlockSection>
+            
+            <!-- Output Section -->
+            <apex:outputPanel id="resultBlock">
+                <apex:outputPanel rendered="{!showResult}">
+                    <apex:outputText value="Converted Amount = {!convertedAmount}" />
+                </apex:outputPanel>
+            </apex:outputPanel>
+         
+        </apex:pageBlock>
+    </apex:form>
+    
+    
+</apex:page>
+             
+
+//------------------Simple Interest and Compound Interest-------------------------//
+public class InterestCalculatorController
+{
+    public Decimal principal { get; set; }
+    public Decimal rate { get; set; }          // Annual interest rate in %
+    public Decimal timePeriod { get; set; }    // Time in years
+    public Integer n { get; set; } 
+
+    public Decimal simpleInterest {get; set;}
+    public Decimal compoundInterest {get; set;}
+    
+    public void calculateInterest()
+    {
+        if(principal!=null && rate!=null && timePeriod !=null)
+        {
+            simpleInterest=(principal*rate*timePeriod)/100;
+        }
+        
+        if(n!=null && n>0)
+        {
+            Double p=principal.doubleValue();
+            Double r=rate.doubleValue();
+            Double t=timePeriod.doubleValue();
+            Double base=(1+(r/(n*100)));
+            Double exponent=n*t;
+            Double amount=p*Math.pow(base,exponent);
+            compoundInterest=amount-p;
+        }
+        else
+        {
+            compoundInterest=null;
+        }
+    }
+}
+
+-----------------UI--------------
+<apex:page controller="InterestCalculatorController">
+    <apex:form >
+        <apex:pageBlock title="Interest Calculator">
+            
+            <apex:pageBlockSection columns="2">
+                <apex:outputLabel value="Principal:" />
+                <apex:inputText value="{!principal}" />
+
+                <apex:outputLabel value="Rate (% per annum):" />
+                <apex:inputText value="{!rate}" />
+
+                <apex:outputLabel value="Time Period (years):" />
+                <apex:inputText value="{!timePeriod}" />
+
+                <apex:outputLabel value="Compounding Frequency (n):" />
+                <apex:inputText value="{!n}" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Calculate" action="{!calculateInterest}" reRender="resultBlock" />
+            </apex:pageBlockButtons>
+
+            <apex:outputPanel id="resultBlock">
+                <apex:pageBlockSection title="Results" columns="1">
+                    <apex:outputText value="Simple Interest: {!simpleInterest}" rendered="{!NOT(ISNULL(simpleInterest))}" />
+                    <apex:outputText value="Compound Interest: {!compoundInterest}" rendered="{!NOT(ISNULL(compoundInterest))}" />
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+            
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
+
+//------------------Temperature Converter -------------------------//
+public class TemperatureConverterController {
+    public Map<String, List<Double>> temperatureMap { get; set; }
+    public Double operand {get; set;}
+    public Double result {get; set;}
+    public String operandType {get; set;}
+    public String resultType {get; set;} 
+    
+    public TemperatureConverterController() {
+        temperatureMap = new Map<String, List<Double>>();
+        temperatureMap.put('Celsius', new List<Double>{0.0, 100.0});
+        temperatureMap.put('Fahrenheit', new List<Double>{32.0, 212.0});
+        temperatureMap.put('Kelvin', new List<Double>{273.15, 373.15});
+    }
+    
+    public List<SelectOption> getTempOptions(){
+        List<SelectOption> options = new List<SelectOption>();
+        for(String tempType: temperatureMap.keySet()){
+            options.add(new SelectOption(tempType, tempType));
+        }
+        return options;
+    }
+
+    public void convert(){
+        if(temperatureMap.containsKey(operandType) && temperatureMap.containsKey(resultType) && operand != null)
+        {
+            Double operandLow = temperatureMap.get(operandType).get(0);
+            Double operandHigh = temperatureMap.get(operandType).get(1);
+            Double resultLow = temperatureMap.get(resultType).get(0);
+            Double resultHigh = temperatureMap.get(resultType).get(1);
+            result = ((operand-operandLow)/(operandHigh-operandLow))*(resultHigh - resultLow) + resultLow;
+        }
+    }   
+}
+
+--------------------UI---------------
+<apex:page controller="TemperatureConverterController">
+    <apex:form >
+        <apex:pageBlock title="Temperature Converter">
+            <apex:pageBlockSection columns="2">
+                
+                <apex:outputLabel value="Input" />
+                <apex:inputText value="{!operand}" />
+                
+                <apex:outputLabel value="Input Temperature Type: " />
+                <apex:selectList value="{!operandType}">
+                    <apex:selectOptions value="{!tempOptions}" />
+                </apex:selectList>
+                
+                <apex:outputLabel value="Output Temperature Type: " />
+                    <apex:selectList value="{!resultType}">
+                    <apex:selectOptions value="{!tempOptions}" />
+                </apex:selectList>
+                
+                <apex:commandButton value="Convert" action="{!convert}" reRender="outputBlock" />
+            
+            </apex:pageBlockSection>
+            
+
+            <apex:outputPanel id="outputBlock">
+                <apex:outputText value="Result {!result}" />
+            </apex:outputPanel>
+        
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
+
+//------------------Prime Checker -------------------------//
+public class PrimeChecker {
+    public Integer inputNumber { get; set; }
+
+    public void checkPrime() {
+        Boolean isPrime = true;
+
+        if (inputNumber <= 1) {
+            isPrime = false;
+        } else {
+            for (Integer i = 2; i <= Math.sqrt(inputNumber); i++) {
+                if (Math.mod(inputNumber, i) == 0) {
+                    isPrime = false;
+                    break;
+                }
+            }
+        }
+
+        // Output the result to the page
+        if (isPrime) {
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.INFO, inputNumber + ' is a Prime Number.'));
+        } else {
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.INFO, inputNumber + ' is NOT a Prime Number.'));
+        }
+    }
+}
+
+------------UI---------------
+<apex:page controller="PrimeChecker">
+    <h1>Prime Number Checker</h1>
+
+    <!-- Form to input number -->
+    <apex:form >
+        <apex:pageMessages /> <!-- Display success/error messages -->
+
+        <!-- Input field for the number -->
+        <apex:inputText value="{!inputNumber}" label="Enter a number" />
+
+        <!-- Button to call the checkPrime method -->
+        <apex:commandButton value="Check Prime" action="{!checkPrime}" rerender="resultPanel" />
+    </apex:form>
+
+    <!-- Panel to show result -->
+    <apex:outputPanel id="resultPanel">
+        <h3>Result:</h3>
+        <apex:facet name="header">Prime Number Result</apex:facet>
+        <apex:pageMessages />
+    </apex:outputPanel>
+</apex:page>
+               
+
+//------------------Fibonacci Series -------------------------//
+public class FibonacciSeries {
+    public Integer terms { get; set; }
+    public List<Integer> series { get; set; }
+
+    public void generateSeries() {
+        series = new List<Integer>();
+        Integer a = 0, b = 1;
+
+        if (terms == 1) {
+            series.add(a);
+        } else if (terms >= 2) {
+            series.add(a);
+            series.add(b);
+            for (Integer i = 2; i < terms; i++) {
+                Integer next = a + b;
+                series.add(next);
+                a = b;
+                b = next;
+            }
+        }
+    }
+
+    // To display series in a single line separated by commas
+	public String getDisplaySeries() {
+        if (series == null) return '';
+        
+        String strList;
+        for (Integer i=0;i<series.size();i++) {
+            strList+=String.valueOf(series[i])+(i==series.size()-1?'':',');
+        }
+        return strList;
+    }
+}
+
+--------------UI------------
+apex:page controller="FibonacciSeries">
+    <apex:form >
+        <apex:pageBlock title="Fibonacci Series Generator">
+            
+            <apex:pageBlockSection columns="2">
+                <apex:outputLabel value="Enter number of terms:" for="termsInput"/>
+                <apex:inputText id="termsInput" value="{!terms}" />
+                
+                <apex:outputLabel value="" />
+                <apex:commandButton value="Generate" action="{!generateSeries}" reRender="resultBlock" />
+            </apex:pageBlockSection>
+
+            <apex:outputPanel id="resultBlock">
+                <apex:pageBlockSection title="Fibonacci Series" rendered="{!NOT(ISNULL(series)) && series.size > 0}">
+                    <apex:outputText value="{!displaySeries}" />
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
+            
+
+//------------------Matrix addition -------------------------//
+public class MatrixAddController {
+    public String matrix1Input { get; set; }
+    public String matrix2Input { get; set; }
+    public String resultOutput { get; set; }
+
+    public void addMatrices() {
+        try {
+            List<List<Integer>> matrix1 = parseMatrix(matrix1Input);
+            List<List<Integer>> matrix2 = parseMatrix(matrix2Input);
+
+            if (matrix1.size() != matrix2.size() || matrix1[0].size() != matrix2[0].size()) {
+                resultOutput = 'Error: Matrices must have the same dimensions.';
+                return;
+            }
+
+            List<List<Integer>> result = new List<List<Integer>>();
+            for (Integer i = 0; i < matrix1.size(); i++) {
+                List<Integer> row = new List<Integer>();
+                for (Integer j = 0; j < matrix1[i].size(); j++) {
+                    row.add(matrix1[i][j] + matrix2[i][j]);
+                }
+                result.add(row);
+            }
+
+            resultOutput = matrixToString(result);
+        } catch (Exception e) {
+            resultOutput = 'Error: Invalid input format.';
+        }
+    }
+
+    private List<List<Integer>> parseMatrix(String input) {
+        List<List<Integer>> matrix = new List<List<Integer>>();
+        List<String> rows = input.split('\n');
+        for (String row : rows) {
+            List<Integer> parsedRow = new List<Integer>();
+            for (String num : row.split(',')) {
+                parsedRow.add(Integer.valueOf(num.trim()));
+            }
+            matrix.add(parsedRow);
+        }
+        return matrix;
+    }
+
+    private String matrixToString(List<List<Integer>> matrix) {
+        List<String> rows = new List<String>();
+        for (List<Integer> row : matrix) {
+            rows.add(String.join(row, ', '));
+        }
+        return String.join(rows, '\n');
+    }
+}
+
+--------UI------------
+<apex:page controller="MatrixAddController">
+    <apex:form >
+        <apex:pageBlock title="Matrix Addition">
+            <apex:pageBlockSection columns="1">
+                <apex:outputLabel value="Enter Matrix 1 (each row on a new line, values comma-separated):"/>
+                <apex:inputTextarea value="{!matrix1Input}" rows="5" cols="50"/>
+
+                <apex:outputLabel value="Enter Matrix 2 (same dimensions):"/>
+                <apex:inputTextarea value="{!matrix2Input}" rows="5" cols="50"/>
+
+                <apex:commandButton value="Add Matrices" action="{!addMatrices}" rerender="result"/>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="result">
+                <apex:outputText value="{!resultOutput}" style="white-space: pre-line; font-weight: bold; color: green;"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
+
+
+//------------------Scientific Calculator -------------------------//
+public class ScientificCalc {
+    public Double firstnumber { get; set; }
+    public Double secondnumber { get; set; }
+    public Double result { get; set; }
+    public String operationName { get; set; }
+
+
+    /*public List<String> history { get; set; }
+
+
+    public ScientificCalc() {
+        history = new List<String>();
+    }
+
+
+    private void log(String opName, String message) {
+        operationName = opName;
+        if (result != null)
+            history.add(message + ' = ' + result);
+        else
+            history.add(message + ' = Invalid');
+    }*/
+
+    public void Addition() {
+        result = firstnumber + secondnumber;
+        
+        //log('Addition', 'Addition of ' + firstnumber + ' and ' + secondnumber);
+    }
+
+
+    public void Subtraction() {
+        result = firstnumber - secondnumber;
+        //log('Subtraction', 'Subtraction of ' + firstnumber + ' and ' + secondnumber);
+    }
+
+
+    public void Multiplication() {
+        result = firstnumber * secondnumber;
+        //log('Multiplication', 'Multiplication of ' + firstnumber + ' and ' + secondnumber);
+    }
+
+
+    public void Division() {
+        result = (secondnumber != 0) ? firstnumber / secondnumber : null;
+        //log('Division', 'Division of ' + firstnumber + ' by ' + secondnumber);
+    }
+
+
+    public void Modulus() {
+        result = Math.mod(firstnumber.intValue(), secondnumber.intValue());
+        //log('Modulus', 'Modulus of ' + firstnumber + ' % ' + secondnumber);
+    }
+
+
+    public void power() {
+        result = Math.pow(firstnumber, secondnumber);
+        //log('Power', firstnumber + ' ^ ' + secondnumber);
+    }
+
+
+    public void square_root1() {
+        result = Math.sqrt(firstnumber);
+        //log('Square Root', 'Square root of ' + firstnumber);
+    }
+
+
+    public void square_root2() {
+        result = Math.sqrt(secondnumber);
+        //log('Square Root', 'Square root of ' + secondnumber);
+    }
+
+
+    public void square1() {
+        result = firstnumber * firstnumber;
+        //log('Square', 'Square of ' + firstnumber);
+    }
+
+
+    public void square2() {
+        result = secondnumber * secondnumber;
+        //log('Square', 'Square of ' + secondnumber);
+    }
+
+
+    public void sine1() {
+        result = Math.sin(firstnumber * Math.PI / 180);
+        //log('Sine', 'Sine of ' + firstnumber + '°');
+    }
+
+
+    public void sine2() {
+        result = Math.sin(secondnumber * Math.PI / 180);
+        //log('Sine', 'Sine of ' + secondnumber + '°');
+    }
+
+
+    public void cosine1() {
+        result = Math.cos(firstnumber * Math.PI / 180);
+        //log('Cosine', 'Cosine of ' + firstnumber + '°');
+    }
+
+
+    public void cosine2() {
+        result = Math.cos(secondnumber * Math.PI / 180);
+        //log('Cosine', 'Cosine of ' + secondnumber + '°');
+    }
+
+
+    public void tangent1() {
+        result = Math.tan(firstnumber * Math.PI / 180);
+        //log('Tangent', 'Tangent of ' + firstnumber + '°');
+    }
+
+
+    public void tangent2() {
+        result = Math.tan(secondnumber * Math.PI / 180);
+        //log('Tangent', 'Tangent of ' + secondnumber + '°');
+    }
+
+
+    public void log1() {
+        result = (firstnumber > 0) ? Math.log(firstnumber) / Math.log(10) : null;
+        //log('Log', 'Log base 10 of ' + firstnumber);
+    }
+
+
+    public void log2() {
+        result = (secondnumber > 0) ? Math.log(secondnumber) / Math.log(10) : null;
+        //log('Log', 'Log base 10 of ' + secondnumber);
+    }
+
+
+    public void ln1() {
+        result = (firstnumber > 0) ? Math.log(firstnumber) : null;
+        //log('Ln', 'Ln of ' + firstnumber);
+    }
+
+
+    public void ln2() {
+        result = (secondnumber > 0) ? Math.log(secondnumber) : null;
+        log('Ln', 'Ln of ' + secondnumber);
+    }
+
+
+    public void exp1() {
+        result = Math.exp(firstnumber);
+        //log('Exponential', 'e^' + firstnumber);
+    }
+
+
+    public void exp2() {
+        result = Math.exp(secondnumber);
+        //log('Exponential', 'e^' + secondnumber);
+    }
+
+
+    public void abs1() {
+        result = Math.abs(firstnumber);
+        //log('Absolute', 'Absolute of ' + firstnumber);
+    }
+
+
+    public void abs2() {
+        result = Math.abs(secondnumber);
+        //log('Absolute', 'Absolute of ' + secondnumber);
+    }
+
+
+    /*public void reset() {
+        firstnumber = null;
+        secondnumber = null;
+        result = null;
+        operationName = null;
+        history.clear();
+    }*/
+}
+
+--------------UI-------------
+<apex:page controller="ScientificCalc">
+    <apex:form >
+
+        <apex:sectionHeader title="Scientific Calculator" subtitle="Without History & Reset" />
+
+        <apex:pageBlock title="Calculator">
+
+            <!-- Inputs -->
+            <apex:pageBlockSection id="inputs">
+                <apex:inputText label="First Number" value="{!firstnumber}" />
+                <apex:inputText label="Second Number" value="{!secondnumber}" />
+                <apex:outputText label="Operation" value="{!operationName}" id="op" style="color:blue;" />
+                <apex:outputText label="Result" value="{!result}" id="res" style="font-weight: bold;" />
+            </apex:pageBlockSection>
+
+            <!-- Operations -->
+            <apex:pageBlockSection title="Basic Operations" columns="3">
+                <apex:commandButton value="+" action="{!Addition}" reRender="res,op" />
+                <apex:commandButton value="-" action="{!Subtraction}" reRender="res,op" />
+                <apex:commandButton value="*" action="{!Multiplication}" reRender="res,op" />
+                <apex:commandButton value="/" action="{!Division}" reRender="res,op" />
+                <apex:commandButton value="%" action="{!Modulus}" reRender="res,op" />
+                <apex:commandButton value="x^y" action="{!power}" reRender="res,op" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Roots & Squares" columns="3">
+                <apex:commandButton value="Num1²" action="{!square1}" reRender="res,op" />
+                <apex:commandButton value="Num2²" action="{!square2}" reRender="res,op" />
+                <apex:commandButton value="√Num1" action="{!square_root1}" reRender="res,op" />
+                <apex:commandButton value="√Num2" action="{!square_root2}" reRender="res,op" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Trigonometry (°)" columns="3">
+                <apex:commandButton value="Sin(Num1)" action="{!sine1}" reRender="res,op" />
+                <apex:commandButton value="Cos(Num1)" action="{!cosine1}" reRender="res,op" />
+                <apex:commandButton value="Tan(Num1)" action="{!tangent1}" reRender="res,op" />
+                <apex:commandButton value="Sin(Num2)" action="{!sine2}" reRender="res,op" />
+                <apex:commandButton value="Cos(Num2)" action="{!cosine2}" reRender="res,op" />
+                <apex:commandButton value="Tan(Num2)" action="{!tangent2}" reRender="res,op" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Log & Exp" columns="3">
+                <apex:commandButton value="Log(Num1)" action="{!log1}" reRender="res,op" />
+                <apex:commandButton value="Ln(Num1)" action="{!ln1}" reRender="res,op" />
+                <apex:commandButton value="e^Num1" action="{!exp1}" reRender="res,op" />
+                <apex:commandButton value="Log(Num2)" action="{!log2}" reRender="res,op" />
+                <apex:commandButton value="Ln(Num2)" action="{!ln2}" reRender="res,op" />
+                <apex:commandButton value="e^Num2" action="{!exp2}" reRender="res,op" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Absolute" columns="2">
+                <apex:commandButton value="|Num1|" action="{!abs1}" reRender="res,op" />
+                <apex:commandButton value="|Num2|" action="{!abs2}" reRender="res,op" />
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+
+    </apex:form>
+</apex:page>
+
+//------------------Matrix Multiplication -------------------------//
+public class MatrixMultiplicationController {
+    public String matrix1Input { get; set; }
+    public String matrix2Input { get; set; }
+    public String resultOutput { get; set; }
+
+    // Method to perform matrix multiplication
+    public void multiplyMatrices() {
+        try {
+            List<List<Integer>> matrix1 = parseMatrix(matrix1Input);
+            List<List<Integer>> matrix2 = parseMatrix(matrix2Input);
+
+            // Check if matrix multiplication is possible (columns of matrix1 must be equal to rows of matrix2)
+            if (matrix1[0].size() != matrix2.size()) {
+                resultOutput = 'Error: Number of columns of Matrix 1 must be equal to number of rows of Matrix 2.';
+                return;
+            }
+
+            // Initialize result matrix with zeroes
+            List<List<Integer>> result = new List<List<Integer>>();
+            for (Integer i = 0; i < matrix1.size(); i++) {
+                List<Integer> row = new List<Integer>();
+                for (Integer j = 0; j < matrix2[0].size(); j++) {
+                    Integer sum = 0;
+                    for (Integer k = 0; k < matrix1[0].size(); k++) {
+                        sum += matrix1[i][k] * matrix2[k][j];
+                    }
+                    row.add(sum);
+                }
+                result.add(row);
+            }
+
+            resultOutput = matrixToString(result); // Convert result to string for display
+        } catch (Exception e) {
+            resultOutput = 'Error: Invalid input format.';
+        }
+    }
+
+    // Helper method to parse matrix from string input
+    private List<List<Integer>> parseMatrix(String input) {
+        List<List<Integer>> matrix = new List<List<Integer>>();
+        List<String> rows = input.split('\n');
+        for (String row : rows) {
+            List<Integer> parsedRow = new List<Integer>();
+            for (String num : row.split(',')) {
+                parsedRow.add(Integer.valueOf(num.trim()));
+            }
+            matrix.add(parsedRow);
+        }
+        return matrix;
+    }
+
+    // Helper method to convert matrix to string format for display
+    private String matrixToString(List<List<Integer>> matrix) {
+        List<String> rows = new List<String>();
+        for (List<Integer> row : matrix) {
+            rows.add(String.join(row, ', ')); // Join row elements with a comma
+        }
+        return String.join(rows, '\n'); // Join rows with a newline
+    }
+}
+
+----------------UI-------------
+<apex:page controller="MatrixMultiplicationController">
+    <h1>Matrix Multiplication</h1>
+    
+    <apex:form >
+        <!-- Matrix 1 Input -->
+        <h3>Enter Matrix 1:</h3>
+        <apex:inputTextarea value="{!matrix1Input}" rows="5" cols="50"/>
+        <p>Enter each row separated by a newline, and each number in a row separated by a comma (e.g., "1, 2, 3 \n 4, 5, 6").</p>
+        
+        <!-- Matrix 2 Input -->
+        <h3>Enter Matrix 2:</h3>
+        <apex:inputTextarea value="{!matrix2Input}" rows="5" cols="50"/>
+        <p>Enter each row separated by a newline, and each number in a row separated by a comma (e.g., "7, 8 \n 9, 10").</p>
+        
+        <!-- Button to Trigger Matrix Multiplication -->
+        <apex:commandButton value="Multiply Matrices" action="{!multiplyMatrices}" rerender="resultPanel"/>
+        
+        <!-- Display Result -->
+        <apex:outputPanel id="resultPanel">
+            <h3>Result:</h3>
+            <apex:outputText value="{!resultOutput}" rendered="{!NOT(ISBLANK(resultOutput))}" />
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>
+
+//------------------Scientific Calculator with history -------------------------//
+public class ScientificCalc {
+    public Double firstnumber { get; set; }
+    public Double secondnumber { get; set; }
+    public Double result { get; set; }
+    public String operationName { get; set; }
+
+
+    public List<String> history { get; set; }
+
+
+    public ScientificCalc() {
+        history = new List<String>();
+    }
+
+
+    private void log(String opName, String message) {
+        operationName = opName;
+        if (result != null)
+            history.add(message + ' = ' + result);
+        else
+            history.add(message + ' = Invalid');
+    }
+
+
+    public void Addition() {
+        result = firstnumber + secondnumber;
+        
+        log('Addition', 'Addition of ' + firstnumber + ' and ' + secondnumber);
+    }
+
+
+    public void Subtraction() {
+        result = firstnumber - secondnumber;
+        log('Subtraction', 'Subtraction of ' + firstnumber + ' and ' + secondnumber);
+    }
+
+
+    public void Multiplication() {
+        result = firstnumber * secondnumber;
+        log('Multiplication', 'Multiplication of ' + firstnumber + ' and ' + secondnumber);
+    }
+
+
+    public void Division() {
+        result = (secondnumber != 0) ? firstnumber / secondnumber : null;
+        log('Division', 'Division of ' + firstnumber + ' by ' + secondnumber);
+    }
+
+
+    public void Modulus() {
+        result = Math.mod(firstnumber.intValue(), secondnumber.intValue());
+        log('Modulus', 'Modulus of ' + firstnumber + ' % ' + secondnumber);
+    }
+
+
+    public void power() {
+        result = Math.pow(firstnumber, secondnumber);
+        log('Power', firstnumber + ' ^ ' + secondnumber);
+    }
+
+
+    public void square_root1() {
+        result = Math.sqrt(firstnumber);
+        log('Square Root', 'Square root of ' + firstnumber);
+    }
+
+
+    public void square_root2() {
+        result = Math.sqrt(secondnumber);
+        log('Square Root', 'Square root of ' + secondnumber);
+    }
+
+
+    public void square1() {
+        result = firstnumber * firstnumber;
+        log('Square', 'Square of ' + firstnumber);
+    }
+
+
+    public void square2() {
+        result = secondnumber * secondnumber;
+        log('Square', 'Square of ' + secondnumber);
+    }
+
+
+    public void sine1() {
+        result = Math.sin(firstnumber * Math.PI / 180);
+        log('Sine', 'Sine of ' + firstnumber + '°');
+    }
+
+
+    public void sine2() {
+        result = Math.sin(secondnumber * Math.PI / 180);
+        log('Sine', 'Sine of ' + secondnumber + '°');
+    }
+
+
+    public void cosine1() {
+        result = Math.cos(firstnumber * Math.PI / 180);
+        log('Cosine', 'Cosine of ' + firstnumber + '°');
+    }
+
+
+    public void cosine2() {
+        result = Math.cos(secondnumber * Math.PI / 180);
+        log('Cosine', 'Cosine of ' + secondnumber + '°');
+    }
+
+
+    public void tangent1() {
+        result = Math.tan(firstnumber * Math.PI / 180);
+        log('Tangent', 'Tangent of ' + firstnumber + '°');
+    }
+
+
+    public void tangent2() {
+        result = Math.tan(secondnumber * Math.PI / 180);
+        log('Tangent', 'Tangent of ' + secondnumber + '°');
+    }
+
+
+    public void log1() {
+        result = (firstnumber > 0) ? Math.log(firstnumber) / Math.log(10) : null;
+        log('Log', 'Log base 10 of ' + firstnumber);
+    }
+
+
+    public void log2() {
+        result = (secondnumber > 0) ? Math.log(secondnumber) / Math.log(10) : null;
+        log('Log', 'Log base 10 of ' + secondnumber);
+    }
+
+
+    public void ln1() {
+        result = (firstnumber > 0) ? Math.log(firstnumber) : null;
+        log('Ln', 'Ln of ' + firstnumber);
+    }
+
+
+    public void ln2() {
+        result = (secondnumber > 0) ? Math.log(secondnumber) : null;
+        log('Ln', 'Ln of ' + secondnumber);
+    }
+
+
+    public void exp1() {
+        result = Math.exp(firstnumber);
+        log('Exponential', 'e^' + firstnumber);
+    }
+
+
+    public void exp2() {
+        result = Math.exp(secondnumber);
+        log('Exponential', 'e^' + secondnumber);
+    }
+
+
+    public void abs1() {
+        result = Math.abs(firstnumber);
+        log('Absolute', 'Absolute of ' + firstnumber);
+    }
+
+
+    public void abs2() {
+        result = Math.abs(secondnumber);
+        log('Absolute', 'Absolute of ' + secondnumber);
+    }
+
+
+    public void reset() {
+        firstnumber = null;
+        secondnumber = null;
+        result = null;
+        operationName = null;
+        history.clear();
+    }
+}
+
+------------------------UI--------------------------
+<apex:page controller="ScientificCalc">
+    <apex:form >
+
+        <apex:sectionHeader title="Scientific Calculator" subtitle="With All Operations" />
+
+        <apex:pageBlock title="Calculator">
+
+            <!-- Input Fields -->
+            <apex:pageBlockSection id="inputs">
+                <apex:inputText label="First Number" value="{!firstnumber}" />
+                <apex:inputText label="Second Number" value="{!secondnumber}" />
+                <apex:outputText label="Operation" value="{!operationName}" id="op" style="color:blue;" />
+                <apex:outputText label="Result" value="{!result}" id="res" style="font-weight: bold;" />
+            </apex:pageBlockSection>
+
+            <!-- Basic Operations -->
+            <apex:pageBlockSection title="Basic Operations" columns="3">
+                <apex:commandButton value="Addition" action="{!Addition}" reRender="res,op,history" />
+                <apex:commandButton value="Subtraction" action="{!Subtraction}" reRender="res,op,history" />
+                <apex:commandButton value="Multiplication" action="{!Multiplication}" reRender="res,op,history" />
+                <apex:commandButton value="Division" action="{!Division}" reRender="res,op,history" />
+                <apex:commandButton value="Modulus" action="{!Modulus}" reRender="res,op,history" />
+                <apex:commandButton value="Power" action="{!power}" reRender="res,op,history" />
+            </apex:pageBlockSection>
+
+            <!-- Advanced Math -->
+            <apex:pageBlockSection title="Square and Roots" columns="3">
+                <apex:commandButton value="Square of Num1" action="{!square1}" reRender="res,op,history" />
+                <apex:commandButton value="Square of Num2" action="{!square2}" reRender="res,op,history" />
+                <apex:commandButton value="Sqrt of Num1" action="{!square_root1}" reRender="res,op,history" />
+                <apex:commandButton value="Sqrt of Num2" action="{!square_root2}" reRender="res,op,history" />
+            </apex:pageBlockSection>
+
+            <!-- Trigonometry -->
+            <apex:pageBlockSection title="Trigonometry (Degrees)" columns="3">
+                <apex:commandButton value="Sin(Num1)" action="{!sine1}" reRender="res,op,history" />
+                <apex:commandButton value="Sin(Num2)" action="{!sine2}" reRender="res,op,history" />
+                <apex:commandButton value="Cos(Num1)" action="{!cosine1}" reRender="res,op,history" />
+                <apex:commandButton value="Cos(Num2)" action="{!cosine2}" reRender="res,op,history" />
+                <apex:commandButton value="Tan(Num1)" action="{!tangent1}" reRender="res,op,history" />
+                <apex:commandButton value="Tan(Num2)" action="{!tangent2}" reRender="res,op,history" />
+            </apex:pageBlockSection>
+
+            <!-- Logarithmic & Exponential -->
+            <apex:pageBlockSection title="Log & Exponential" columns="3">
+                <apex:commandButton value="Log(Num1)" action="{!log1}" reRender="res,op,history" />
+                <apex:commandButton value="Log(Num2)" action="{!log2}" reRender="res,op,history" />
+                <apex:commandButton value="Ln(Num1)" action="{!ln1}" reRender="res,op,history" />
+                <apex:commandButton value="Ln(Num2)" action="{!ln2}" reRender="res,op,history" />
+                <apex:commandButton value="e^Num1" action="{!exp1}" reRender="res,op,history" />
+                <apex:commandButton value="e^Num2" action="{!exp2}" reRender="res,op,history" />
+            </apex:pageBlockSection>
+
+            <!-- Absolute Values -->
+            <apex:pageBlockSection title="Absolute Value" columns="2">
+                <apex:commandButton value="|Num1|" action="{!abs1}" reRender="res,op,history" />
+                <apex:commandButton value="|Num2|" action="{!abs2}" reRender="res,op,history" />
+            </apex:pageBlockSection>
+
+            <!-- History -->
+            <apex:pageBlockSection title="Operation History" id="history">
+                <apex:repeat value="{!history}" var="h">
+                    <div style="margin: 3px 0;">• {!h}</div>
+                </apex:repeat>
+            </apex:pageBlockSection>
+                      
+        </apex:pageBlock>
+
+        <!-- Reset Button -->
+        <div style="margin-top: 15px; margin-left: 25px">
+            <apex:commandButton value="Reset" action="{!reset}" reRender="inputs,res,op,history" />
+        </div>
+
+    </apex:form>
+
+
+
+
+
+______________Natural Number______________
+// Apex Controller
+public class CalculateNaturalNumbersController {
+    
+    // List to store natural numbers
+    public List<Integer> naturalNumbers { get; private set; }
+    
+    // Constructor
+    public CalculateNaturalNumbersController() {
+        // Initialize and calculate natural numbers
+        calculateNaturalNumbers();
+    }
+    
+    // Method to calculate first 100 natural numbers
+    private void calculateNaturalNumbers() {
+        naturalNumbers = new List<Integer>();
+        
+        // Calculate first 100 natural numbers
+        for(Integer i = 1; i <= 100; i++) {
+            naturalNumbers.add(i);
+        }
+    }
+    
+    // Method to get the calculated natural numbers
+    public List<Integer> getNaturalNumbers() {
+        return naturalNumbers;
+    }
+}
+
+// Visualforce Page
+/*
+<apex:page controller="CalculateNaturalNumbersController" docType="html-5.0">
+    <apex:sectionHeader title="Natural Numbers" subtitle="First 100 Natural Numbers"/>
+    
+    <apex:form>
+        <apex:pageBlock title="First 100 Natural Numbers">
+            <apex:pageBlockSection columns="1">
+                <apex:pageBlockTable value="{!naturalNumbers}" var="num" style="width: 100%">
+                    <apex:column headerValue="Natural Number" value="{!num}"/>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
+*/
+
+// Alternative Solution: Execute Anonymous Apex
+/*
+// Execute this in the Developer Console to calculate and display the first 100 natural numbers
+List<Integer> naturalNumbers = new List<Integer>();
+
+// Calculate first 100 natural numbers
+for(Integer i = 1; i <= 100; i++) {
+    naturalNumbers.add(i);
+    System.debug('Natural Number ' + i + ': ' + i);
+}
+
+System.debug('First 100 natural numbers: ' + naturalNumbers);
+*/
+</apex:page>
